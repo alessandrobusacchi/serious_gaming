@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class DoorManager : MonoBehaviour
 {
@@ -10,6 +11,10 @@ public class DoorManager : MonoBehaviour
 
     private bool isPlayerClose = false;
     private bool imInteracting = false;
+    private bool isInProximtiy = false;
+
+    public GameObject playerObject;
+    private PlayerInput playerInput;
 
 
     private enum DoorActions
@@ -22,6 +27,10 @@ public class DoorManager : MonoBehaviour
         Option6,
     }
 
+    void Start()
+    {
+        playerInput = playerObject.GetComponent<PlayerInput>();
+    }
 
     void Update()
     {
@@ -35,11 +44,13 @@ public class DoorManager : MonoBehaviour
 
         if (distance <= proximityThreshold)
         {
-            if(!imInteracting)
+            if (!imInteracting)
+            {
                 text_interact.SetActive(true);
+            }
             isPlayerClose = true;
         }
-        else
+        else if (isPlayerClose)
         {
             text_interact.SetActive(false);
             isPlayerClose = false;
@@ -53,6 +64,35 @@ public class DoorManager : MonoBehaviour
 
             text_interact.SetActive(false);
             scroll_options.SetActive(true);
+
+            if (playerInput != null)
+            {
+                playerInput.enabled = false;
+
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+
+            LevelManager.Instance.StartInteractionWithDoor(this);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape) && imInteracting)
+        {
+            imInteracting = false;
+
+            //to fix, enable movements of player and camera
+
+            scroll_options.SetActive(false);
+
+            LevelManager.Instance.StopInteractionWithDoor();
+
+            if (playerInput != null)
+            {
+                playerInput.enabled = true;
+                
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
         }
     }
 
