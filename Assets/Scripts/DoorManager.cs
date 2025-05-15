@@ -11,6 +11,18 @@ public class DoorManager : MonoBehaviour
     private bool isPlayerClose = false;
     private bool imInteracting = false;
 
+
+    private enum DoorActions
+    {
+        OpenFast,
+        OpenSlowly,
+        GoAway,
+        TouchKnob,
+        Option5,
+        Option6,
+    }
+
+
     void Update()
     {
         if (player == null)
@@ -42,5 +54,9 @@ public class DoorManager : MonoBehaviour
             text_interact.SetActive(false);
             scroll_options.SetActive(true);
         }
+    }
+
+    public void OnOptionSelected(int optionIndex){
+        Debug.Log(optionIndex);
     }
 }
