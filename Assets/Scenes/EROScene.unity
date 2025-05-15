@@ -5044,7 +5044,7 @@ MonoBehaviour:
   proximityThreshold: 2
   text_interact: {fileID: 744340330}
   scroll_options: {fileID: 1760823046}
-  playerObject: {fileID: 0}
+  playerObject: {fileID: 1968184017}
 --- !u!1 &2080340914
 GameObject:
   m_ObjectHideFlags: 0

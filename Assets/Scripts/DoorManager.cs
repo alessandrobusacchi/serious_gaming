@@ -60,8 +60,6 @@ public class DoorManager : MonoBehaviour
         {
             imInteracting = true;
 
-            //to fix, block movements of player and camera
-
             text_interact.SetActive(false);
             scroll_options.SetActive(true);
 
@@ -79,8 +77,6 @@ public class DoorManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape) && imInteracting)
         {
             imInteracting = false;
-
-            //to fix, enable movements of player and camera
 
             scroll_options.SetActive(false);
 
