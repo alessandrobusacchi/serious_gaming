@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "ERO Fire Evacuation Simulator.sln"
+    "dotnet.defaultSolution": "serious_gaming.sln"
 }
