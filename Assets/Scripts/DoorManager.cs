@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class DoorManager : MonoBehaviour
 {
@@ -23,8 +24,8 @@ public class DoorManager : MonoBehaviour
         OpenSlowly,
         GoAway,
         TouchKnob,
-        Option5,
-        Option6,
+        TouchDoor,
+        Crouch,
     }
 
     void Start()
@@ -76,23 +77,70 @@ public class DoorManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape) && imInteracting)
         {
-            imInteracting = false;
+            HandleEscapeAction();
+        }
+    }
 
-            scroll_options.SetActive(false);
+    private void HandleEscapeAction()
+    {
+        imInteracting = false;
+        scroll_options.SetActive(false);
 
-            LevelManager.Instance.StopInteractionWithDoor();
+        LevelManager.Instance.StopInteractionWithDoor();
 
-            if (playerInput != null)
-            {
-                playerInput.enabled = true;
-                
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
+        if (playerInput != null)
+        {
+            playerInput.enabled = true;
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+    }
+
+    private string GenerateTemperature()
+    {
+        int i = Random.Range(0, 2);
+        if (i == 0)
+        {
+            return "hot";
+            // Handle hot doorknob logic
+        }
+        else
+        {
+            return "cold";
+            // Handle cold doorknob logic
         }
     }
 
     public void OnOptionSelected(int optionIndex){
         Debug.Log(optionIndex);
+        switch (optionIndex)
+        {
+            case (int)DoorActions.OpenFast:
+                Debug.Log("Wow, don't open the door too fast");
+                break;
+            case (int)DoorActions.OpenSlowly:
+                Debug.Log("Don't open the door without checking the door knob");
+                break;
+            case (int)DoorActions.GoAway:
+                Debug.Log("Well done, your own safety is most important");
+                Debug.Log("However, there might still be people in the room");
+                HandleEscapeAction();
+                break;
+            case (int)DoorActions.TouchKnob:
+                Debug.Log("The doorknob is " + GenerateTemperature());
+                break;
+            case (int)DoorActions.TouchDoor:
+                Debug.Log("The door feels " + GenerateTemperature());
+                break;
+            case (int)DoorActions.Crouch:
+                Debug.Log("You crouched before the door");
+                Camera.main.transform.Translate(0, -20, 0);
+                break;
+            default:
+                Debug.LogWarning("Invalid option selected.");
+                break;
+        }
+
     }
 }
