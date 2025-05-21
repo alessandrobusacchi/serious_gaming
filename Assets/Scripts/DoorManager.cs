@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class DoorManager : MonoBehaviour
 {
@@ -134,8 +133,7 @@ public class DoorManager : MonoBehaviour
                 Debug.Log("The door feels " + GenerateTemperature());
                 break;
             case (int)DoorActions.Crouch:
-                Debug.Log("You crouched before the door");
-                Camera.main.transform.Translate(0, -20, 0);
+                Debug.Log("Crouched");
                 break;
             default:
                 Debug.LogWarning("Invalid option selected.");
