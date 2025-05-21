@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -17,6 +18,7 @@ public class DoorManager : MonoBehaviour
     private PlayerInput playerInput;
     private PopupManager popupManager;
 
+    private int doorRisk;
     private enum DoorActions
     {
         OpenFast,
@@ -27,10 +29,24 @@ public class DoorManager : MonoBehaviour
         Crouch,
     }
 
+    private enum DoorRisks
+    {
+        None,
+        Fire,
+        Smoke,
+        HazardousMaterials
+    }
+
     void Start()
     {
         playerInput = playerObject.GetComponent<PlayerInput>();
         popupManager = FindFirstObjectByType<PopupManager>();
+        
+        doorRisk = UnityEngine.Random.Range(0, Enum.GetNames(typeof( DoorRisks)).Length);
+        if(doorRisk == (int) DoorRisks.Smoke)
+        {
+            ActivateSmoke();
+        }
     }
 
     void Update()
@@ -81,7 +97,12 @@ public class DoorManager : MonoBehaviour
             PopupManager.Instance.SetInactive();
         }
     }
-
+    void ActivateSmoke()
+    {
+        Debug.Log("Foo");
+        ParticleSystem particleSystem = GetComponentInChildren<ParticleSystem>();
+        particleSystem.Play();
+    }   
     private void HandleEscapeAction()
     {
         imInteracting = false;
@@ -104,17 +125,7 @@ public class DoorManager : MonoBehaviour
 
     private string GenerateTemperature()
     {
-        int i = Random.Range(0, 2);
-        if (i == 0)
-        {
-            return "hot";
-            // Handle hot doorknob logic
-        }
-        else
-        {
-            return "cold";
-            // Handle cold doorknob logic
-        }
+        return (doorRisk == (int)DoorRisks.Fire || doorRisk == (int)DoorRisks.Smoke) ? "hot" : "cold";
     }
 
     public void OnOptionSelected(int optionIndex){
