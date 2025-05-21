@@ -15,7 +15,7 @@ public class DoorManager : MonoBehaviour
 
     public GameObject playerObject;
     private PlayerInput playerInput;
-
+    private PopupManager popupManager;
 
     private enum DoorActions
     {
@@ -30,6 +30,7 @@ public class DoorManager : MonoBehaviour
     void Start()
     {
         playerInput = playerObject.GetComponent<PlayerInput>();
+        popupManager = FindFirstObjectByType<PopupManager>();
     }
 
     void Update()
@@ -77,6 +78,7 @@ public class DoorManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape) && imInteracting)
         {
             HandleEscapeAction();
+            PopupManager.Instance.SetInactive();
         }
     }
 
@@ -90,9 +92,13 @@ public class DoorManager : MonoBehaviour
         if (playerInput != null)
         {
             playerInput.enabled = true;
+            Debug.Log(PopupManager.Instance.popupPanel.activeSelf);
+            if (!PopupManager.Instance.popupPanel.activeSelf)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
 
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
         }
     }
 
@@ -112,33 +118,43 @@ public class DoorManager : MonoBehaviour
     }
 
     public void OnOptionSelected(int optionIndex){
-        Debug.Log(optionIndex);
+
+        string text = "";
         switch (optionIndex)
         {
             case (int)DoorActions.OpenFast:
-                Debug.Log("Wow, don't open the door too fast");
+                text = "Wow, don't open the door too fast.";
                 break;
             case (int)DoorActions.OpenSlowly:
-                Debug.Log("Don't open the door without checking the door knob");
+                text = "Don't open the door without checking the door knob.";
                 break;
             case (int)DoorActions.GoAway:
-                Debug.Log("Well done, your own safety is most important");
-                Debug.Log("However, there might still be people in the room");
-                HandleEscapeAction();
+                text = "Well done, your own safety is most important.\nHowever, there might still be people in the room.";
                 break;
             case (int)DoorActions.TouchKnob:
-                Debug.Log("The doorknob is " + GenerateTemperature());
+                text = "The doorknob is " + GenerateTemperature();
                 break;
             case (int)DoorActions.TouchDoor:
-                Debug.Log("The door feels " + GenerateTemperature());
+                text = "The door feels " + GenerateTemperature();
                 break;
             case (int)DoorActions.Crouch:
-                Debug.Log("Crouched");
+                text = "Crouched";
                 break;
             default:
-                Debug.LogWarning("Invalid option selected.");
+                text = "Invalid option selected.";
                 break;
         }
 
+        if (popupManager == null) {
+            Debug.Log("No popup manager set, finding it now");
+            popupManager = FindFirstObjectByType<PopupManager>();
+        }
+
+        popupManager.ShowText(text);
+
+        if(optionIndex == (int)DoorActions.GoAway)
+        {
+            HandleEscapeAction();
+        }
     }
 }
