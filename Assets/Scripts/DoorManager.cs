@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class DoorManager : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class DoorManager : MonoBehaviour
     public float proximityThreshold = 1f;
 
     public GameObject text_interact;
+    private GameObject text_interact_original; // to keep the original text_interact, so we can set it back after sequence completion
     public GameObject scroll_options;
 
     private bool isPlayerClose = false;
@@ -26,7 +28,8 @@ public class DoorManager : MonoBehaviour
         DoorType1,
         DoorType2,
         DoorType3,
-        DoorType4
+        DoorType4,
+        Exit
     }
 
     // with these we can set different levels of smoke and fire
@@ -84,6 +87,8 @@ public class DoorManager : MonoBehaviour
         playerInput = playerObject.GetComponent<PlayerInput>();
         popupManager = FindFirstObjectByType<PopupManager>();
 
+        text_interact_original = text_interact;
+
         if (smokeLevel != SmokeLevel.None)
         {
             // to extend with levels of smoke and fire
@@ -125,8 +130,8 @@ public class DoorManager : MonoBehaviour
             if (playerInput != null)
             {
                 playerInput.enabled = false;
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                UnityEngine.Cursor.lockState = UnityEngine.CursorLockMode.None;
+                UnityEngine.Cursor.visible = true;
             }
 
             LevelManager.Instance.StartInteractionWithDoor(this);
@@ -161,8 +166,8 @@ public class DoorManager : MonoBehaviour
 
             if (!PopupManager.Instance.popupPanel.activeSelf)
             {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                UnityEngine.Cursor.lockState = UnityEngine.CursorLockMode.Locked;
+                UnityEngine.Cursor.visible = false;
             }
         }
 
@@ -171,6 +176,14 @@ public class DoorManager : MonoBehaviour
 
     public void OnOptionSelected(int optionIndex)
     {
+        if (optionIndex == -1) 
+        {
+            #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+            #else
+                Application.Quit();
+            #endif
+        }
         // my idea is: we can list the next options (example, first the player touches the knob right?
         // then he needs maybe to select actions that are not in the buttons, so maybe we need another one
         // but we still can pass index 7, 8, 9, and have them the same in the enumerative
@@ -210,8 +223,6 @@ public class DoorManager : MonoBehaviour
     // if it is the last one, successfully done, we can close the interaction and hide the UI
     private void CheckActionSequence(DoorActions lastAction, string text)
     {
-        popupManager.SetInactive();
-        popupManager.SetActive();
         if (lastAction != DoorActions.GoAway)
         {
             // if the last action is not the one to go away, we check if it is correct
@@ -238,7 +249,8 @@ public class DoorManager : MonoBehaviour
             {
                 popupManager.ShowText(text + "\nCorrect action, keep it up...");
             }
-        }else
+        }
+        else
         {
             // if the last action is to go away, we just print the text
             popupManager.ShowText(text);
