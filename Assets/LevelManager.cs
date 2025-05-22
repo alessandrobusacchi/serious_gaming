@@ -92,6 +92,7 @@ public class LevelManager : MonoBehaviour
     {
         if (currentDoor != null)
         {
+            Debug.Log(optionIndex);
             currentDoor.OnOptionSelected(optionIndex);
         }
         else
