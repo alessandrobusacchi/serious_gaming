@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -176,7 +177,7 @@ public class DoorManager : MonoBehaviour
         DoorActions selectedAction = (DoorActions)optionIndex;
         playerActionSequence.Add(selectedAction);
 
-        // i also give indication either the choice that he made is correct, so we can think about how to do this
+        // I also give indication either the choice that he made is correct, so we can think about how to do this
         string text = selectedAction switch
         {
             DoorActions.OpenFast => "Wow, don't open the door too fast.",
@@ -193,9 +194,10 @@ public class DoorManager : MonoBehaviour
             popupManager = FindFirstObjectByType<PopupManager>();
         }
 
-        popupManager.ShowText(text);
+        //popupManager.ShowText(text);
+        //this was overwritten
 
-        CheckActionSequence(selectedAction);
+        CheckActionSequence(selectedAction, text);
 
         if (selectedAction == DoorActions.GoAway)
         {
@@ -206,28 +208,40 @@ public class DoorManager : MonoBehaviour
     // actions are handled one per one. if it makes one not correct, he needs to start again
     // if it is correct, he can continue with the next one
     // if it is the last one, successfully done, we can close the interaction and hide the UI
-    private void CheckActionSequence(DoorActions lastAction)
+    private void CheckActionSequence(DoorActions lastAction, string text)
     {
-        int currentStep = playerActionSequence.Count - 1;
+        popupManager.SetInactive();
+        popupManager.SetActive();
+        if (lastAction != DoorActions.GoAway)
+        {
+            // if the last action is not the one to go away, we check if it is correct
+            int currentStep = playerActionSequence.Count - 1;
 
-        if (currentStep >= correctActionSequence.Count ||
-            playerActionSequence[currentStep] != correctActionSequence[currentStep])
-        {
-            popupManager.ShowText("Azione sbagliata. Riprova dall'inizio.");
-            playerActionSequence.Clear();
-            scroll_options.SetActive(false); // erasing sequence of the player and closing the UI
-            return;
-        }
+            if (currentStep >= correctActionSequence.Count ||
+                playerActionSequence[currentStep] != correctActionSequence[currentStep])
+            {
+                popupManager.ShowText("Wrong action. Try again from the beginning.");
+                playerActionSequence.Clear();
+                //scroll_options.SetActive(false); // erasing sequence of the player and closing the UI
+                //this causes the UI to close, but we need to keep it open for the next action (to try again)
+                //or we close it, but then we have to call HandleEscapeAction()
+                return;
+            }
 
-        // correct
-        if (playerActionSequence.Count == correctActionSequence.Count)
+            // correct
+            if (playerActionSequence.Count == correctActionSequence.Count)
+            {
+                popupManager.ShowText("Sequence completed! Well done!");
+                HandleEscapeAction(); // interaction is over and close ui
+            }
+            else
+            {
+                popupManager.ShowText(text + "\nCorrect action, keep it up...");
+            }
+        }else
         {
-            popupManager.ShowText("Sequenza completata! Ben fatto.");
-            HandleEscapeAction(); // interaction is over and close ui
-        }
-        else
-        {
-            popupManager.ShowText("Azione corretta. Continua così...");
+            // if the last action is to go away, we just print the text
+            popupManager.ShowText(text);
         }
     }
 }
