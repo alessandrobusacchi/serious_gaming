@@ -5410,6 +5410,14 @@ MonoBehaviour:
   text_interact: {fileID: 744340330}
   scroll_options: {fileID: 1760823046}
   playerObject: {fileID: 1968184017}
+  doorName: 
+  doorType: 0
+  smokeLevel: 0
+  fireLevel: 0
+  doorKnobTemperature: 0
+  doorTemperature: 0
+  hazardousMaterials: 0
+  correctActionSequence: 
 --- !u!4 &289175101 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6518997691028768924, guid: 278941cfba0a8a14cb8571113f4c93d7, type: 3}
@@ -6031,6 +6039,14 @@ MonoBehaviour:
   text_interact: {fileID: 744340330}
   scroll_options: {fileID: 1760823046}
   playerObject: {fileID: 1968184017}
+  doorName: 
+  doorType: 0
+  smokeLevel: 0
+  fireLevel: 0
+  doorKnobTemperature: 0
+  doorTemperature: 0
+  hazardousMaterials: 0
+  correctActionSequence: 
 --- !u!4 &460299069 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6518997691028768924, guid: 278941cfba0a8a14cb8571113f4c93d7, type: 3}
@@ -7762,6 +7778,14 @@ MonoBehaviour:
   text_interact: {fileID: 744340330}
   scroll_options: {fileID: 1760823046}
   playerObject: {fileID: 1968184017}
+  doorName: 
+  doorType: 0
+  smokeLevel: 1
+  fireLevel: 0
+  doorKnobTemperature: 1
+  doorTemperature: 0
+  hazardousMaterials: 0
+  correctActionSequence: 0300000005000000
 --- !u!4 &1001790742 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6518997691028768924, guid: 278941cfba0a8a14cb8571113f4c93d7, type: 3}
@@ -24772,6 +24796,14 @@ MonoBehaviour:
   text_interact: {fileID: 744340330}
   scroll_options: {fileID: 1760823046}
   playerObject: {fileID: 1968184017}
+  doorName: 
+  doorType: 0
+  smokeLevel: 0
+  fireLevel: 0
+  doorKnobTemperature: 0
+  doorTemperature: 0
+  hazardousMaterials: 0
+  correctActionSequence: 
 --- !u!4 &2010142321 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6518997691028768924, guid: 278941cfba0a8a14cb8571113f4c93d7, type: 3}

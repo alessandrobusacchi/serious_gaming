@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,14 +13,51 @@ public class DoorManager : MonoBehaviour
 
     private bool isPlayerClose = false;
     private bool imInteracting = false;
-    private bool isInProximtiy = false;
 
     public GameObject playerObject;
     private PlayerInput playerInput;
     private PopupManager popupManager;
 
-    private int doorRisk;
-    private enum DoorActions
+    // to be removed?? need to decide if we need it or not: for me, either we keep this or the doorname just as reference. 
+    // we use the other enums for the handling of particle systems
+    public enum DoorType
+    {
+        DoorType1,
+        DoorType2,
+        DoorType3,
+        DoorType4
+    }
+
+    // with these we can set different levels of smoke and fire
+    public enum SmokeLevel
+    {
+        None,
+        Low,
+        Medium,
+        High
+    }
+
+    public enum FireLevel
+    {
+        None,
+        Low,
+        Medium,
+        High
+    }
+
+    public enum DoorKnobTemperature
+    {
+        Cold,
+        Hot
+    }
+
+    public enum DoorTemperature
+    {
+        Cold,
+        Hot
+    }
+
+    public enum DoorActions
     {
         OpenFast,
         OpenSlowly,
@@ -29,22 +67,25 @@ public class DoorManager : MonoBehaviour
         Crouch,
     }
 
-    private enum DoorRisks
-    {
-        None,
-        Fire,
-        Smoke,
-        HazardousMaterials
-    }
+    public string doorName;
+    public DoorType doorType;
+    public SmokeLevel smokeLevel;
+    public FireLevel fireLevel;
+    public DoorKnobTemperature doorKnobTemperature;
+    public DoorTemperature doorTemperature;
+    public bool hazardousMaterials;
+    public List<DoorActions> correctActionSequence;
+
+    private List<DoorActions> playerActionSequence = new List<DoorActions>();
 
     void Start()
     {
         playerInput = playerObject.GetComponent<PlayerInput>();
         popupManager = FindFirstObjectByType<PopupManager>();
-        
-        doorRisk = UnityEngine.Random.Range(0, Enum.GetNames(typeof( DoorRisks)).Length);
-        if(doorRisk == (int) DoorRisks.Smoke)
+
+        if (smokeLevel != SmokeLevel.None)
         {
+            // to extend with levels of smoke and fire
             ActivateSmoke();
         }
     }
@@ -83,7 +124,6 @@ public class DoorManager : MonoBehaviour
             if (playerInput != null)
             {
                 playerInput.enabled = false;
-
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
@@ -97,75 +137,97 @@ public class DoorManager : MonoBehaviour
             PopupManager.Instance.SetInactive();
         }
     }
+
+    // to be extended
     void ActivateSmoke()
     {
-        Debug.Log("Foo");
         ParticleSystem particleSystem = GetComponentInChildren<ParticleSystem>();
-        particleSystem.Play();
-    }   
+        if (particleSystem != null)
+        {
+            particleSystem.Play();
+        }
+    }
+
     private void HandleEscapeAction()
     {
         imInteracting = false;
         scroll_options.SetActive(false);
-
         LevelManager.Instance.StopInteractionWithDoor();
 
         if (playerInput != null)
         {
             playerInput.enabled = true;
-            Debug.Log(PopupManager.Instance.popupPanel.activeSelf);
+
             if (!PopupManager.Instance.popupPanel.activeSelf)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
-
         }
+
+        playerActionSequence.Clear();
     }
 
-    private string GenerateTemperature()
+    public void OnOptionSelected(int optionIndex)
     {
-        return (doorRisk == (int)DoorRisks.Fire || doorRisk == (int)DoorRisks.Smoke) ? "hot" : "cold";
-    }
+        // my idea is: we can list the next options (example, first the player touches the knob right?
+        // then he needs maybe to select actions that are not in the buttons, so maybe we need another one
+        // but we still can pass index 7, 8, 9, and have them the same in the enumerative
+        DoorActions selectedAction = (DoorActions)optionIndex;
+        playerActionSequence.Add(selectedAction);
 
-    public void OnOptionSelected(int optionIndex){
-
-        string text = "";
-        switch (optionIndex)
+        // i also give indication either the choice that he made is correct, so we can think about how to do this
+        string text = selectedAction switch
         {
-            case (int)DoorActions.OpenFast:
-                text = "Wow, don't open the door too fast.";
-                break;
-            case (int)DoorActions.OpenSlowly:
-                text = "Don't open the door without checking the door knob.";
-                break;
-            case (int)DoorActions.GoAway:
-                text = "Well done, your own safety is most important.\nHowever, there might still be people in the room.";
-                break;
-            case (int)DoorActions.TouchKnob:
-                text = "The doorknob is " + GenerateTemperature();
-                break;
-            case (int)DoorActions.TouchDoor:
-                text = "The door feels " + GenerateTemperature();
-                break;
-            case (int)DoorActions.Crouch:
-                text = "Crouched";
-                break;
-            default:
-                text = "Invalid option selected.";
-                break;
-        }
+            DoorActions.OpenFast => "Wow, don't open the door too fast.",
+            DoorActions.OpenSlowly => "Don't open the door without checking the door knob.",
+            DoorActions.GoAway => "Well done, your own safety is most important.\nHowever, there might still be people in the room.",
+            DoorActions.TouchKnob => "The doorknob is " + doorKnobTemperature.ToString(),
+            DoorActions.TouchDoor => "The door feels " + doorTemperature.ToString(),
+            DoorActions.Crouch => "Crouched",
+            _ => "Invalid option selected."
+        };
 
-        if (popupManager == null) {
-            Debug.Log("No popup manager set, finding it now");
+        if (popupManager == null)
+        {
             popupManager = FindFirstObjectByType<PopupManager>();
         }
 
         popupManager.ShowText(text);
 
-        if(optionIndex == (int)DoorActions.GoAway)
+        CheckActionSequence(selectedAction);
+
+        if (selectedAction == DoorActions.GoAway)
         {
             HandleEscapeAction();
+        }
+    }
+
+    // actions are handled one per one. if it makes one not correct, he needs to start again
+    // if it is correct, he can continue with the next one
+    // if it is the last one, successfully done, we can close the interaction and hide the UI
+    private void CheckActionSequence(DoorActions lastAction)
+    {
+        int currentStep = playerActionSequence.Count - 1;
+
+        if (currentStep >= correctActionSequence.Count ||
+            playerActionSequence[currentStep] != correctActionSequence[currentStep])
+        {
+            popupManager.ShowText("Azione sbagliata. Riprova dall'inizio.");
+            playerActionSequence.Clear();
+            scroll_options.SetActive(false); // erasing sequence of the player and closing the UI
+            return;
+        }
+
+        // correct
+        if (playerActionSequence.Count == correctActionSequence.Count)
+        {
+            popupManager.ShowText("Sequenza completata! Ben fatto.");
+            HandleEscapeAction(); // interaction is over and close ui
+        }
+        else
+        {
+            popupManager.ShowText("Azione corretta. Continua così...");
         }
     }
 }
