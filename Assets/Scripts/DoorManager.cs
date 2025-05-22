@@ -242,7 +242,7 @@ public class DoorManager : MonoBehaviour
             // correct
             if (playerActionSequence.Count == correctActionSequence.Count)
             {
-                popupManager.ShowText("Sequence completed! Well done!");
+                popupManager.ShowText("Sequence completed! Well done!\nYou saved all the people from this room");
                 HandleEscapeAction(); // interaction is over and close ui
             }
             else
